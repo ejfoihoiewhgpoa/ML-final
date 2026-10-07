@@ -11,7 +11,7 @@ ROOTS = [
     "A", "Am", "C", "Cm", "D", "Dm", "E", "Em", "F", "G", "none"
 ]
 
-QUALITIES = ["R", "1", "M", "D"
+QUALITIES = ["R", "1", "M", "D", "m1"
 ]     
 root = input(f"Nhập hợp âm tay trái: ").strip()
 quality = input(f"Nhập loại tay phải: ").strip()

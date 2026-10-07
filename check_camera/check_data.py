@@ -3,12 +3,11 @@ import numpy as np
 import pandas as pd
  
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DATA = os.path.join(BASE, "my_dataset")
+DATA = os.path.join(BASE, "my_dataset", "train_landmarks")
 
 # đọc train.csv
 CSV_PATH = os.path.join(DATA, "train.csv") 
 df = pd.read_csv(CSV_PATH) 
-df["label"] = df["chord"]
 
 LABEL_MAP = {
     "none": 0,
@@ -24,8 +23,8 @@ LABEL_MAP = {
     "G": 10,
 }
 
-def label_to_id(name):                            
-    return LABEL_MAP[name]
+def label_to_id(name):
+    return LABEL_MAP[name.split("_")[0]]
 
 COLS = [f"{a}_{side}_hand_{i}"                    # 63 cột tay trái rồi 63 cột tay phải
         for side in ("left", "right") for i in range(21) for a in "xyz"]
@@ -39,6 +38,17 @@ for label in sorted(os.listdir(DATA)):
         if fname.endswith(".parquet"):
             rows.append({"path": os.path.join(label, fname), "label": label})
 df = pd.DataFrame(rows)
+
+
+if df.empty:
+    raise SystemExit(f"Không tìm thấy file .parquet trong thư mục con của {DATA}\n"
+                     f"Nội dung thư mục: {os.listdir(DATA)[:10]}")
+
+unknown = sorted({l.split('_')[0] for l in df.label} - set(LABEL_MAP))
+if unknown:
+    raise SystemExit(f"Nhãn không có trong LABEL_MAP: {unknown}")
+
+print("số clip mỗi nhãn:\n", df.label.value_counts())
 
 def load_clip(path):
     seq = pd.read_parquet(path)
@@ -78,3 +88,5 @@ train_idx, test_idx = next(gss.split(X, y, groups))
 X_train, y_train = X[train_idx], y[train_idx]
 X_test, y_test = X[test_idx], y[test_idx]
 print("train:", X_train.shape, "test:", X_test.shape)
+print("nhãn trong train:", np.unique(y_train))
+print("nhãn trong test :", np.unique(y_test))
