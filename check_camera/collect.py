@@ -19,7 +19,7 @@ if root not in ROOTS:
     raise ValueError(
         f"Hợp âm '{root}' không hợp lệ!\n"
         f"họn một trong: {ROOTS}"
-    )
+    )  
 if quality not in QUALITIES:
     raise ValueError(
         f"Loại '{quality}' không hợp lệ!\n"
