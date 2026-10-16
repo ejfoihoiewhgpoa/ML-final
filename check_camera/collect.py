@@ -8,7 +8,7 @@ OUT_DIR = "my_dataset/train_landmarks"
 PARTICIPANT_ID = 1     # đổi theo từng người quay
 
 ROOTS = [
-    "A", "Am", "C", "Cm", "D", "Dm", "E", "Em", "F", "G", "none"
+    "A", "Am", "C", "Cm", "D", "Dm", "E", "Em", "F", "G", "none", "B"
 ]
 
 QUALITIES = ["R", "1", "M", "D", "m1"

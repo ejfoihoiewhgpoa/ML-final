@@ -7,7 +7,7 @@ BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.path.join(BASE, "my_dataset", "train_landmarks")
 
 LABEL_MAP = {
-    "none": 0,
+    "none": 0,    
     "A": 1, 
     "Am": 2,
     "C": 3,
