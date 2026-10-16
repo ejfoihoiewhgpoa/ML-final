@@ -1,13 +1,10 @@
-import os
+import os, glob
 import numpy as np
 import pandas as pd
+import pyarrow.parquet as pq
  
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.path.join(BASE, "my_dataset", "train_landmarks")
-
-# đọc train.csv
-CSV_PATH = os.path.join(DATA, "train.csv") 
-df = pd.read_csv(CSV_PATH) 
 
 LABEL_MAP = {
     "none": 0,
@@ -29,16 +26,32 @@ def label_to_id(name):
 COLS = [f"{a}_{side}_hand_{i}"                    # 63 cột tay trái rồi 63 cột tay phải
         for side in ("left", "right") for i in range(21) for a in "xyz"]
 
+for label in sorted(os.listdir(DATA)):
+    folder = os.path.join(DATA, label)
+    if not os.path.isdir(folder):
+        continue
+    files = glob.glob(os.path.join(folder, "**", "*.parquet"), recursive=True)
+    subs = {os.path.basename(os.path.dirname(f)) for f in files}
+    print(f"{label:<6} {len(files):>5} parquet | thư mục con: {sorted(subs)}")
+
+total_files, total_frames = 0, 0
 rows = []
 for label in sorted(os.listdir(DATA)):
     folder = os.path.join(DATA, label)
     if not os.path.isdir(folder):                 # bỏ qua file lẻ như train.csv
         continue
+    files = glob.glob(os.path.join(folder, "**", "*.parquet"), recursive=True)
+    frames = sum(pq.ParquetFile(f).metadata.num_rows for f in files)
+    print(f"{label:<8}{len(files):>10}{frames:>14}")
+    total_files += len(files)
+    total_frames += frames
     for fname in sorted(os.listdir(folder)):
         if fname.endswith(".parquet"):
             rows.append({"path": os.path.join(label, fname), "label": label})
 df = pd.DataFrame(rows)
 
+print(f"{'Class':<8}{'Số file':>10}{'Tổng frame':>14}")
+print("-" * 32)
 
 if df.empty:
     raise SystemExit(f"Không tìm thấy file .parquet trong thư mục con của {DATA}\n"
