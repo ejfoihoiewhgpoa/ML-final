@@ -53,6 +53,44 @@ df = pd.DataFrame(rows)
 print(f"{'Class':<8}{'Số file':>10}{'Tổng frame':>14}")
 print("-" * 32)
 
+
+inv = []
+for label in sorted(os.listdir(DATA)):
+    folder = os.path.join(DATA, label)
+    if not os.path.isdir(folder):
+        continue
+    for f in glob.glob(os.path.join(folder, "**", "*.parquet"), recursive=True):
+        inv.append({
+            "label": label,
+            "sub": os.path.relpath(os.path.dirname(f), folder),  # thư mục con tính từ nhãn
+            "name": os.path.basename(f),
+            "frames": pq.ParquetFile(f).metadata.num_rows,
+            "path": f,
+        })
+inv = pd.DataFrame(inv)
+
+t = inv.groupby(["sub", "label"]).agg(n=("name", "size"), frames=("frames", "sum")).unstack("label")
+pd.set_option("display.width", 250, "display.max_columns", None, "display.max_rows", None)
+print(t["n"])        # số file mỗi thư mục con, mỗi nhãn
+print(t["frames"])   # số frame
+
+x = inv[(inv.label.isin(["Dm", "E"])) & (inv["sub"] == "sub1")]
+print(x[["label", "name", "frames"]].sort_values(["label", "name"]).to_string())
+
+names = inv.groupby("label")["name"].apply(set)
+ref = names["A"]                       # nhãn chuẩn
+for lb in ["Dm", "E"]:
+    print(lb, "thừa:", sorted(names[lb] - ref))
+print("Am thiếu:", len(ref - names["Am"]), "file")
+inv["key"] = inv["sub"] + "/" + inv["name"].str.replace(r"^[A-Za-z]+m?_", "", regex=True)
+print(inv.frames.describe())
+print(inv[inv.label.isin(["Dm", "E"])].nlargest(5, "frames")[["label", "path", "frames"]])
+
+# file trùng nội dung (cùng nhãn, cùng số frame, thường là bản copy "(1)")
+dup = inv[inv.duplicated(["label", "frames"], keep=False)].sort_values(["label", "frames"])
+print(dup[["label", "name", "frames"]].head(30))
+
+
 if df.empty:
     raise SystemExit(f"Không tìm thấy file .parquet trong thư mục con của {DATA}\n"
                      f"Nội dung thư mục: {os.listdir(DATA)[:10]}")
