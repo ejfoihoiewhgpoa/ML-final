@@ -1,36 +1,36 @@
 ﻿File,Dự đoán,Bass,Các nốt,Khớp tên file
-A#.wav,A#,E,D F A#,✓
-A#m.wav,A#m,C,C# D# F A#,✓
-A#m7.wav,A#m7,A,C C# F B# A#,✓
-A#maj7.wav,A#maj7/A,A,D F A A#,✓
-A.wav,A,B#,C# E A,✓
-A7.wav,A7,B#,C# E G A,✓
-Am.wav,Am/E,E,C D E A,✓
-Am7.wav,Am7,E#,C E G A,✓
-B#7.wav,B#7,G,C E# B# A#,✓
-B#m7.wav,B#m7,F,E E# B# B,✓
-B7.wav,B7,A#,C# D# A B,✓
-Bmaj7.wav,Bmaj7/D#,D#,C# D# A# B,✓
-C#7.wav,C#7,C,C# D# F B,✓
-C#m7.wav,C#m7,D#,C# E B,✓
-C.wav,C,D#,C E G,✓
-C7.wav,C7,D#,E B# A#,✓
-Cm.wav,Cm,B,C D# G,✓
-Cm7.wav,Cm7,D,C D# F G A#,✓
-Cmaj7.wav,Cmaj7/B,B,C E G,✓
-D#.wav,D#,D,D# G A#,✓
-D#7.wav,D#7,D#,C# D# F G B,✓
-D#m7.wav,D#m7,F,C# D# E# A#,✓
-D#maj7.wav,D#maj7,D#,D D# F G,✓
-Dm.wav,Dm,C#,D F A,✓
-Dm7.wav,Dm7/F,F,C D F A,✓
-Em.wav,Em,E,E G B,✓
-Em7.wav,Em7,E#,D E G A B,✓
-Emaj7.wav,Emaj7,E,D# E B,✓
-F7.wav,F7,E,C D# F A,✓
-Fm7.wav,Fm7,G,C D# F B#,✓
-Fmaj7.wav,Fmaj7/E,E,C E F A,✓
-G.wav,G,E#,D G B,✓
-G7.wav,G7,G,D E F G A B,✓
-Gm.wav,Gm,E#,D G A#,✓
-Gm7.wav,Gm7,E,D F G A#,✓
+A.wav,A,B#,E A,✓
+A7.wav,A7,B#,G A,✓
+Am.wav,Am,B#,E A,✓
+Am7.wav,Am7,B#,G A,✓
+Amaj7.wav,Amaj7/B#,B#,B# A,✓
+B.wav,B/E#,E#,E# B,✓
+B7.wav,B7,B,D# E# A B,✓
+Bm.wav,Bm,B,E# B,✓
+Bm7.wav,Bm7,B,D E# A B,✓
+Bmaj7.wav,Bmaj7,B,D# E# A# B,✓
+C.wav,C,C,C E G,✓
+C7.wav,C7,C,C E G A#,✓
+Cm.wav,Cm,C,C G,✓
+Cm7.wav,Cm7,C,C D# G A#,✓
+Cmaj7.wav,Cmaj7,C,C E G B,✓
+D.wav,D,D,D E# A,✓
+D7.wav,D7,D,C D E# A,✓
+Dm.wav,Dm,D,D F A,✓
+Dm7.wav,Dm7,D,C D F A,✓
+Dmaj7.wav,Dmaj7,D,C# D E# A,✓
+E.wav,E,D#,E B#,✓
+E7.wav,E7,D#,E,✓
+Em.wav,Em,D#,E G,✓
+Em7.wav,Em7,D#,E,✓
+Emaj7.wav,Emaj7/D#,D#,E,✓
+F.wav,F,E,F A,✓
+F7.wav,F7,E,F,✓
+Fm.wav,Fm,E,F B#,✓
+Fm7.wav,Fm7,E,F,✓
+Fmaj7.wav,Fmaj7/E,E,E F,✓
+G.wav,G,E#,G,✓
+G7.wav,G,E#,G,✗
+Gm.wav,Gm,E#,G,✓
+Gm7.wav,Gm,E#,G A#,✗
+Gmaj7.wav,G,E#,G,✗
