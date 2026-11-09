@@ -23,3 +23,6 @@ build/
 # Bỏ qua thư mục dữ liệu
 data/
 my_dataset/
+
+main/landmarks_cache.npz
+*.npz
