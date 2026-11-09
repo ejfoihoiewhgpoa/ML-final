@@ -1,0 +1,46 @@
+nếu TRÁI · ngón áp út · điểm 16 · y <= -1.1489:
+|   nếu TRÁI · ngón út · điểm 20 · y <= -0.9099:
+|   |   nếu TRÁI · ngón cái · điểm 4 · x <= -0.5387:
+|   |   |   nếu VỊ TRÍ cổ tay TRÁI · z <= 0.0000:
+|   |   |   |   => M
+|   |   |   ngược lại (VỊ TRÍ cổ tay TRÁI · z > 0.0000):
+|   |   |   |   => m1
+|   |   ngược lại (TRÁI · ngón cái · điểm 4 · x > -0.5387):
+|   |   |   nếu TRÁI · ngón cái · điểm 4 · y <= -1.0501:
+|   |   |   |   => m1
+|   |   |   ngược lại (TRÁI · ngón cái · điểm 4 · y > -1.0501):
+|   |   |   |   => D
+|   ngược lại (TRÁI · ngón út · điểm 20 · y > -0.9099):
+|   |   nếu TRÁI · ngón út · điểm 17 · y <= -0.5563:
+|   |   |   nếu TRÁI · ngón út · điểm 20 · x <= 0.5750:
+|   |   |   |   => M
+|   |   |   ngược lại (TRÁI · ngón út · điểm 20 · x > 0.5750):
+|   |   |   |   => D
+|   |   ngược lại (TRÁI · ngón út · điểm 17 · y > -0.5563):
+|   |   |   nếu TRÁI · ngón cái · điểm 4 · y <= -1.1330:
+|   |   |   |   => m1
+|   |   |   ngược lại (TRÁI · ngón cái · điểm 4 · y > -1.1330):
+|   |   |   |   => M
+ngược lại (TRÁI · ngón áp út · điểm 16 · y > -1.1489):
+|   nếu TRÁI · ngón giữa · điểm 12 · y <= -1.2892:
+|   |   nếu TRÁI · ngón áp út · điểm 16 · x <= -1.1446:
+|   |   |   nếu TRÁI · ngón út · điểm 20 · x <= -1.2088:
+|   |   |   |   => D
+|   |   |   ngược lại (TRÁI · ngón út · điểm 20 · x > -1.2088):
+|   |   |   |   => M
+|   |   ngược lại (TRÁI · ngón áp út · điểm 16 · x > -1.1446):
+|   |   |   nếu TRÁI · ngón cái · điểm 3 · x <= -0.4968:
+|   |   |   |   => 1
+|   |   |   ngược lại (TRÁI · ngón cái · điểm 3 · x > -0.4968):
+|   |   |   |   => 1
+|   ngược lại (TRÁI · ngón giữa · điểm 12 · y > -1.2892):
+|   |   nếu TRÁI · ngón áp út · điểm 13 · y <= -0.5942:
+|   |   |   nếu TRÁI · ngón trỏ · điểm 8 · y <= -1.0363:
+|   |   |   |   => R
+|   |   |   ngược lại (TRÁI · ngón trỏ · điểm 8 · y > -1.0363):
+|   |   |   |   => R
+|   |   ngược lại (TRÁI · ngón áp út · điểm 13 · y > -0.5942):
+|   |   |   nếu TRÁI · ngón áp út · điểm 16 · x <= -1.3259:
+|   |   |   |   => D
+|   |   |   ngược lại (TRÁI · ngón áp út · điểm 16 · x > -1.3259):
+|   |   |   |   => 1

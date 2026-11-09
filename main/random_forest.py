@@ -1,77 +1,136 @@
+"""
+RANDOM FOREST (Rừng ngẫu nhiên) - tự code, dùng lại DecisionTreeScratch
+
+Ý tưởng: nhiều Decision Tree "bỏ phiếu" với nhau.
+  1) Bootstrap: mỗi cây train trên 1 tập mẫu lấy ngẫu nhiên CÓ HOÀN LẠI từ tập train
+  2) Mỗi lần chia, cây chỉ xét 1 tập con ngẫu nhiên các đặc trưng
+     (max_features="sqrt" -> ~căn(137) ~ 11 đặc trưng) -> các cây ít giống nhau
+  3) Dự đoán: mọi cây bỏ phiếu, label nhiều phiếu nhất thắng
+Vì sao tốt hơn 1 cây: mỗi cây sai theo một kiểu khác nhau, bỏ phiếu thì sai số bù trừ.
+
+Để chạy nhanh với ~275k frame:
+  - max_samples: mỗi cây chỉ bootstrap tối đa ngần này frame (mặc định 20000). Frame liền kề
+    gần như giống nhau nên lấy ít hơn vẫn giữ gần đủ thông tin, mỗi cây nhanh hơn nhiều.
+  - Chia khoảng (histogram) của đặc trưng làm MỘT lần cho cả rừng, các cây dùng chung.
+  - max_depth=14, min_samples_leaf=20: cây không mọc tới tận từng frame (đỡ overfit, nhanh).
+  - class_weight="balanced": class ít frame có trọng số lớn hơn.
+  - CV theo nhóm (sequence) trên 1/stride số frame để chọn số cây.
+
+Chạy riêng: python random_forest.py
+"""
 import numpy as np
 
-def gini(y):                                   # độ lẫn của một nhóm nhãn (0 = thuần)
-    p = np.bincount(y) / len(y)
-    return 1 - np.sum(p ** 2)
+from common import SEED, accuracy, get_train_groups, split_data
+from decision_tree import (DecisionTreeScratch, balanced_accuracy, bin_data, convert_labels,
+                           feature_name, group_cv_score, make_bins, select_features)
 
-class Tree:
-    def __init__(self, max_depth=5, n_features=None):
+
+class RandomForestScratch:
+    def __init__(self, n_estimators=100, max_depth=14, max_features="sqrt",
+                 min_samples_leaf=20, max_samples=20000, class_weight="balanced",
+                 seed=SEED):
+        self.n_estimators = n_estimators
         self.max_depth = max_depth
-        self.n_features = n_features           # số đặc trưng được xét mỗi lần chia
+        self.max_features = max_features
+        self.min_samples_leaf = min_samples_leaf
+        self.max_samples = max_samples        # None | số nguyên (số frame) | số thực 0..1 (tỉ lệ)
+        self.class_weight = class_weight
+        self.seed = seed
+
+    def _bootstrap_size(self, n):
+        if self.max_samples is None:
+            return n
+        if isinstance(self.max_samples, float) and self.max_samples <= 1.0:
+            return max(1, int(self.max_samples * n))
+        return min(int(self.max_samples), n)
 
     def fit(self, X, y):
-        self.root = self._grow(X, y, 0)
+        X, y = np.asarray(X, dtype=np.float32), np.asarray(y)
+        self.classes_ = np.unique(y)
+        n, C = len(X), len(self.classes_)
+        rng = np.random.RandomState(self.seed)
+        m = self._bootstrap_size(n)
 
-    def _grow(self, X, y, depth):
-        # dừng: đủ sâu hoặc nhóm đã thuần -> lá = nhãn đa số
-        if depth >= self.max_depth or gini(y) == 0:
-            return np.bincount(y).argmax()
+        edges = make_bins(X)                      # chia khoảng một lần cho cả rừng
+        Xb = bin_data(X, edges)
 
-        d = X.shape[1]
-        feats = np.random.choice(d, self.n_features or d, replace=False)
-        best_gain, best_f, best_t = 0, None, None
+        y_idx = np.searchsorted(self.classes_, y)
+        counts = np.bincount(y_idx, minlength=C)
+        if self.class_weight == "balanced":       # trọng số tính trên toàn bộ tập train
+            cw = np.where(counts > 0, n / (C * np.maximum(counts, 1)), 0.0)
+        else:
+            cw = np.ones(C)
 
-        for f in feats:                        # thử từng đặc trưng
-            for t in np.unique(X[:, f]):       # thử từng ngưỡng
-                left = X[:, f] <= t
-                if left.all():                 # nhánh phải rỗng -> bỏ
-                    continue
-                child = left.mean() * gini(y[left]) + (~left).mean() * gini(y[~left])
-                gain = gini(y) - child         # giảm Gini bao nhiêu
-                if gain > best_gain:
-                    best_gain, best_f, best_t = gain, f, t
-
-        if best_f is None:                     # không chia được nữa
-            return np.bincount(y).argmax()
-
-        left = X[:, best_f] <= best_t
-        return (best_f, best_t,
-                self._grow(X[left], y[left], depth + 1),
-                self._grow(X[~left], y[~left], depth + 1))
-
-    def _predict_one(self, x):
-        node = self.root
-        while isinstance(node, tuple):         # còn là nút (chưa phải lá) thì đi tiếp
-            f, t, left, right = node
-            node = left if x[f] <= t else right
-        return node
-
-    def predict(self, X):
-        return np.array([self._predict_one(x) for x in X])
-
-
-class RandomForest:
-    def __init__(self, n_trees=30, max_depth=5):
-        self.n_trees = n_trees
-        self.max_depth = max_depth
-
-    def fit(self, X, y):
-        X, y = np.array(X), np.array(y)
-        n, d = X.shape
         self.trees = []
-        for _ in range(self.n_trees):
-            idx = np.random.randint(0, n, n)           # bootstrap: lấy mẫu có hoàn lại
-            tree = Tree(self.max_depth, n_features=max(1, int(np.sqrt(d))))
-            tree.fit(X[idx], y[idx])
+        for i in range(self.n_estimators):
+            idx = rng.randint(0, n, size=m)                       # bước 1: bootstrap
+            tree = DecisionTreeScratch(max_depth=self.max_depth,
+                                       min_samples_leaf=self.min_samples_leaf,
+                                       max_features=self.max_features,   # bước 2
+                                       seed=self.seed + i)
+            tree.fit_binned(Xb[idx], y[idx], edges, classes=self.classes_, class_weights=cw)
             self.trees.append(tree)
 
-    def predict(self, X):
-        X = np.array(X)
-        votes = np.array([t.predict(X) for t in self.trees])   # mỗi hàng: 1 cây
-        return np.array([np.bincount(col).argmax() for col in votes.T])  # bỏ phiếu từng điểm
+        # độ quan trọng đặc trưng = trung bình của các cây
+        self.feature_importances_ = np.mean([t.importances_ for t in self.trees], axis=0)
+        return self
 
-X_train = [[1,2],[2,3],[5,5],[6,5]]
-y_train = [0,0,1,1]
-model = RandomForest(n_trees=10)
-model.fit(X_train, y_train)
-print(model.predict([[1.5,1.5],[5.5,5]]))   # [0 1]
+    def predict(self, X):
+        X = np.atleast_2d(np.asarray(X, dtype=np.float32))
+        votes = np.zeros((len(X), len(self.classes_)), dtype=int)
+        rows = np.arange(len(X))
+        for tree in self.trees:                                   # bước 3: mỗi cây bỏ 1 phiếu
+            votes[rows, tree.predict_idx(X)] += 1
+        return self.classes_[votes.argmax(axis=1)]                # label nhiều phiếu nhất
+
+
+def choose_n_estimators(X_train, y_train, groups=None, stride=10, folds=3,
+                        candidates=(25, 50, 100)):
+    """
+    CV theo nhóm trên 1/stride số frame (nhanh). Số cây càng nhiều càng ổn định nên chỉ
+    chọn số lớn hơn khi điểm CV tăng rõ rệt.
+    """
+    if groups is None:
+        print("  [CẢNH BÁO] Không có `groups` -> CV theo frame, điểm CV có thể cao giả do rò rỉ.")
+    else:
+        print(f"  CV theo nhóm: {len(np.unique(groups))} nhóm trong tập train, 1/{stride} số frame")
+    best_n, best_cv = candidates[0], -1
+    for n in candidates:
+        cv = group_cv_score(lambda: RandomForestScratch(n_estimators=n),
+                            X_train, y_train, groups, folds=folds, stride=stride)
+        print(f"  n_estimators={n:3d} -> CV bal-acc = {cv:.4f}")
+        if cv > best_cv + 0.002:
+            best_n, best_cv = n, cv
+    print(f"  => chọn n_estimators = {best_n}")
+    return best_n
+
+
+def run(X_train, X_test, y_train, y_test, groups_train=None, stride=10, feature_cols=None):
+    print("\n=== RANDOM FOREST (tự code) ===")
+    if groups_train is None:                       # lấy nhóm do split_data() của common.py lưu lại
+        g = get_train_groups()
+        if g is not None and len(g) == len(y_train):
+            groups_train = g
+    n = choose_n_estimators(X_train, y_train, groups_train, stride=stride)
+    model = RandomForestScratch(n_estimators=n).fit(X_train, y_train)
+    pred = model.predict(X_test)
+    print(f"  Random Forest test accuracy          = {accuracy(y_test, pred):.4f}")
+    print(f"  Random Forest test balanced accuracy = {balanced_accuracy(y_test, pred):.4f}")
+    cols = feature_cols if feature_cols is not None else list(range(len(model.feature_importances_)))
+    print("  Top 5 đặc trưng quan trọng:")
+    for i in np.argsort(model.feature_importances_)[::-1][:5]:
+        print(f"    {feature_name(cols[i]):32s} {model.feature_importances_[i]:.3f}")
+    return model, pred
+
+
+if __name__ == "__main__":
+    LABEL = "full"        # "full" (gốc_loại, 56 lớp) | "root" (gốc) | "quality" (loại)
+    FEATURES = "all"      # "all" | "left" (tay trái) | "right" (tay phải)
+
+    X_train, X_test, y_train, y_test = split_data()[:4]
+    y_train, y_test = convert_labels(y_train, LABEL), convert_labels(y_test, LABEL)
+    X_train, cols = select_features(X_train, FEATURES)
+    X_test, _ = select_features(X_test, FEATURES)
+    print(f"Học theo: {LABEL} | đặc trưng: {FEATURES} ({len(cols)} cột) | "
+          f"train={len(y_train)} test={len(y_test)} | {len(set(y_train))} lớp")
+    run(X_train, X_test, y_train, y_test, feature_cols=cols)
